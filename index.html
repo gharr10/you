@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>you.</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F0E8;--surface:#FDFAF5;--border:#E0D5C4;--border-light:#EDE8DC;
+  --text:#1C1510;--muted:#8A7A68;--faint:#B8AA98;
+  --accent:#C47A3A;--accent-light:#FAF0E4;--accent-dark:#8B5A28;
+  --past-accent:#2A4A7A;--past-bg:#E8F0FA;
+  --present-accent:#8B5A28;--present-bg:#FAF0E4;
+  --future-accent:#2A5A2A;--future-bg:#EAF5EA;
+  --danger:#C0392B;--success:#2D5A27;
+  --radius:16px;--radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
+
+/* AUTH */
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;}
+.auth-box{width:100%;max-width:340px;}
+.auth-logo{font-family:'DM Serif Display',serif;font-size:56px;color:var(--text);margin-bottom:6px;letter-spacing:-1px;}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:40px;font-weight:300;line-height:1.6;}
+.auth-tabs{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:24px;}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:14px;cursor:pointer;background:transparent;border:none;color:var(--muted);font-family:inherit;transition:all 0.2s;}
+.auth-tab.active{background:var(--text);color:white;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.field input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--surface);color:var(--text);outline:none;font-family:inherit;-webkit-appearance:none;}
+.field input:focus{border-color:var(--accent);}
+.auth-btn{width:100%;padding:14px;background:var(--text);color:var(--surface);border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:4px;}
+.auth-btn:disabled{opacity:0.5;}
+.auth-msg{font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+.auth-msg.error{color:var(--danger);}
+.auth-msg.success{color:var(--success);}
+.auth-hint{font-size:12px;color:var(--faint);margin-top:20px;text-align:center;line-height:1.7;}
+
+/* APP */
+#app-screen{display:none;min-height:100vh;flex-direction:column;}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border-light);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.app-logo{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);}
+.header-right{display:flex;align-items:center;gap:8px;}
+.settings-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:inherit;padding:6px 10px;border-radius:var(--radius-sm);}
+.settings-btn:hover{background:var(--bg);}
+
+/* TABS */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border-light);}
+.tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;white-space:nowrap;}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);font-weight:500;}
+
+/* PANELS */
+.panel{display:none;max-width:600px;margin:0 auto;padding:20px 16px 100px;width:100%;}
+.panel.active{display:block;}
+.panel-intro{margin-bottom:28px;}
+.panel-title{font-family:'DM Serif Display',serif;font-size:30px;color:var(--text);margin-bottom:6px;}
+.panel-sub{font-size:14px;color:var(--muted);line-height:1.6;font-weight:300;}
+
+/* QUESTION CARDS */
+.q-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:18px;margin-bottom:14px;transition:border-color 0.2s;}
+.q-card:focus-within{border-color:var(--accent);}
+.q-label{font-size:11px;font-weight:600;letter-spacing:0.6px;margin-bottom:8px;text-transform:uppercase;}
+.q-label.past{color:var(--past-accent);}
+.q-label.present{color:var(--present-accent);}
+.q-label.future{color:var(--future-accent);}
+.q-prompt{font-size:14px;color:var(--text);line-height:1.6;margin-bottom:12px;font-style:italic;}
+.q-input{width:100%;border:none;outline:none;font-family:inherit;font-size:14px;color:var(--text);background:transparent;resize:none;line-height:1.7;min-height:72px;}
+.q-input::placeholder{color:var(--faint);}
+.q-meta{font-size:11px;color:var(--faint);text-align:right;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light);}
+.q-saving{color:var(--accent);}
+
+/* REFLECTION */
+.reflection{background:var(--accent-light);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;border-left:3px solid var(--accent);}
+.reflection-text{font-size:13px;color:var(--accent-dark);line-height:1.7;font-style:italic;}
+
+/* SAVE BTN */
+.save-btn{position:fixed;bottom:24px;right:20px;background:var(--accent);color:white;border:none;border-radius:30px;padding:13px 24px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(196,122,58,0.3);transition:all 0.2s;z-index:50;}
+.save-btn.done{background:var(--future-accent);}
+
+/* TIMELINE */
+.timeline-entry{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+.timeline-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.timeline-tag{font-size:10px;font-weight:600;letter-spacing:0.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;}
+.tag-past{background:var(--past-bg);color:var(--past-accent);}
+.tag-present{background:var(--present-bg);color:var(--present-accent);}
+.tag-future{background:var(--future-bg);color:var(--future-accent);}
+.timeline-date{font-size:11px;color:var(--faint);}
+.timeline-q{font-size:12px;color:var(--muted);margin-bottom:6px;font-style:italic;}
+.timeline-a{font-size:14px;color:var(--text);line-height:1.6;}
+
+/* SETTINGS */
+.settings-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;transform:translateX(100%);transition:transform 0.25s cubic-bezier(.4,0,.2,1);}
+.settings-overlay.open{transform:translateX(0);}
+.settings-inner{max-width:520px;margin:0 auto;padding:20px 16px 80px;}
+.settings-back{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;color:var(--muted);padding:0 0 20px;display:flex;align-items:center;gap:6px;min-height:44px;}
+.settings-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:24px;}
+.settings-section{margin-bottom:28px;}
+.settings-section-title{font-size:11px;font-weight:600;letter-spacing:0.5px;color:var(--faint);text-transform:uppercase;margin-bottom:12px;}
+.settings-card{background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;}
+.settings-row{padding:16px;display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid var(--border-light);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-info{flex:1;}
+.settings-row-title{font-size:14px;font-weight:500;margin-bottom:3px;}
+.settings-row-sub{font-size:12px;color:var(--muted);line-height:1.5;}
+.settings-btn-sm{background:var(--text);color:white;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.settings-btn-sm:disabled{opacity:0.5;}
+.settings-btn-sm.sent{background:var(--future-accent);}
+.danger-btn{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-sm);padding:12px;width:100%;font-family:inherit;font-size:14px;cursor:pointer;margin-top:8px;}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);margin-bottom:8px;}
+.empty-text{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--faint);font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">you.</div>
+    <div class="auth-sub">a private space to understand yourself.<br>past. present. future.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">sign in</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">create account</button>
+    </div>
+    <div id="login-form">
+      <div class="field"><label>email</label><input type="email" id="login-email" placeholder="your email" autocomplete="email" autocapitalize="none"></div>
+      <div class="field"><label>password</label><input type="password" id="login-pass" placeholder="your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="auth-btn" id="login-btn" onclick="login()">sign in</button>
+    </div>
+    <div id="signup-form" style="display:none;">
+      <div class="field"><label>email</label><input type="email" id="signup-email" placeholder="your email" autocomplete="email" autocapitalize="none"></div>
+      <div class="field"><label>password</label><input type="password" id="signup-pass" placeholder="at least 6 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')signup()"></div>
+      <button class="auth-btn" id="signup-btn" onclick="signup()">create account</button>
+    </div>
+    <div class="auth-msg" id="auth-msg"></div>
+    <div class="auth-hint">this is yours alone.<br>nothing is shared. nothing is sold.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="app-header">
+    <div class="app-logo">you.</div>
+    <div class="header-right">
+      <button class="settings-btn" onclick="openSettings()">settings</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('past',this)">past</button>
+    <button class="tab" onclick="switchTab('present',this)">present</button>
+    <button class="tab" onclick="switchTab('future',this)">future</button>
+    <button class="tab" onclick="switchTab('all',this)">all</button>
+  </div>
+
+  <!-- PAST -->
+  <div class="panel active" id="panel-past">
+    <div class="panel-intro">
+      <div class="panel-title">where you came from.</div>
+      <div class="panel-sub">not to relive it. to understand it.</div>
+    </div>
+    <div class="reflection"><div class="reflection-text">"understanding where you came from is the first step to understanding where you are."</div></div>
+    <div id="past-questions"><div class="loading">loading your answers...</div></div>
+  </div>
+
+  <!-- PRESENT -->
+  <div class="panel" id="panel-present">
+    <div class="panel-intro">
+      <div class="panel-title">who you are right now.</div>
+      <div class="panel-sub">not who you present. who you actually are, today.</div>
+    </div>
+    <div class="reflection"><div class="reflection-text">"most people spend their lives performing a version of themselves. this is the space to drop that."</div></div>
+    <div id="present-questions"><div class="loading">loading your answers...</div></div>
+  </div>
+
+  <!-- FUTURE -->
+  <div class="panel" id="panel-future">
+    <div class="panel-intro">
+      <div class="panel-title">where you're going.</div>
+      <div class="panel-sub">not goals. what you actually want when nobody's watching.</div>
+    </div>
+    <div class="reflection"><div class="reflection-text">"the gap between what you want and what you're building toward — that's where most unhappiness lives."</div></div>
+    <div id="future-questions"><div class="loading">loading your answers...</div></div>
+  </div>
+
+  <!-- ALL -->
+  <div class="panel" id="panel-all">
+    <div class="panel-intro">
+      <div class="panel-title">your story so far.</div>
+      <div class="panel-sub">everything you've written. your words over time.</div>
+    </div>
+    <div id="timeline"><div class="loading">loading...</div></div>
+  </div>
+
+  <button class="save-btn" id="save-btn" onclick="saveAll()">save</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings-overlay" class="settings-overlay">
+  <div class="settings-inner">
+    <button class="settings-back" onclick="closeSettings()">← back</button>
+    <div class="settings-title">settings.</div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">email features</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-title">weekly question</div>
+            <div class="settings-row-sub">one honest question every sunday morning. no pressure to answer immediately.</div>
+          </div>
+          <button class="settings-btn-sm" id="weekly-btn" onclick="sendWeekly()">send now</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-title">seasonal reflection</div>
+            <div class="settings-row-sub">your words from three months ago, reflected back. what would you add today?</div>
+          </div>
+          <button class="settings-btn-sm" id="seasonal-btn" onclick="sendSeasonal()">send now</button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-title">anniversary email</div>
+            <div class="settings-row-sub">a year of your own words. the first thing you ever wrote.</div>
+          </div>
+          <button class="settings-btn-sm" id="anniversary-btn" onclick="sendAnniversary()">send now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">account</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-title">signed in as</div>
+            <div class="settings-row-sub" id="settings-email"></div>
+          </div>
+        </div>
+      </div>
+      <button class="danger-btn" onclick="logout()">sign out</button>
+    </div>
+
+    <div style="font-size:12px;color:var(--faint);text-align:center;margin-top:24px;line-height:1.7;">
+      you. — build better days.<br>
+      your answers are private. nothing is shared.
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVER = 'https://yours-social.com';
+
+const PAST_QS = [
+  { id:'p1', prompt:'what shaped you most before you were 18?', placeholder:'be honest — the good and the difficult...' },
+  { id:'p2', prompt:'what did you learn about yourself early on that you\'re still carrying?', placeholder:'a belief, a pattern, a wound...' },
+  { id:'p3', prompt:'what relationship taught you the most about who you are?', placeholder:'family, friend, or otherwise...' },
+  { id:'p4', prompt:'what moment changed your direction, even slightly?', placeholder:'it doesn\'t have to be dramatic...' },
+  { id:'p5', prompt:'what are you still figuring out from back then?', placeholder:'what hasn\'t fully resolved...' },
+];
+
+const PRESENT_QS = [
+  { id:'n1', prompt:'who are you right now — not who you present, who you actually are?', placeholder:'the honest version...' },
+  { id:'n2', prompt:'what are you avoiding?', placeholder:'the thing you keep not dealing with...' },
+  { id:'n3', prompt:'what are you proud of that you don\'t say out loud?', placeholder:'the quiet things...' },
+  { id:'n4', prompt:'what drains you? what fills you?', placeholder:'two sides of the same question...' },
+  { id:'n5', prompt:'what\'s the gap between who you are and who you want to be?', placeholder:'be specific if you can...' },
+  { id:'n6', prompt:'what do you keep coming back to, even when you try to leave it?', placeholder:'a thought, a feeling, a habit...' },
+];
+
+const FUTURE_QS = [
+  { id:'f1', prompt:'what does a good life actually look like to you — specifically?', placeholder:'describe a day, a feeling, a state of being...' },
+  { id:'f2', prompt:'what would you regret not trying?', placeholder:'the thing that keeps appearing...' },
+  { id:'f3', prompt:'what are you building toward — and do you actually want it?', placeholder:'be honest if the answer surprises you...' },
+  { id:'f4', prompt:'what does enough look like to you?', placeholder:'when would you feel like you\'d arrived...' },
+  { id:'f5', prompt:'who do you want to be in ten years?', placeholder:'not what you want to have done — who you want to be...' },
+  { id:'f6', prompt:'what are you afraid of wanting?', placeholder:'the thing you don\'t let yourself say out loud...' },
+];
+
+let CU = null;
+let savedAnswers = {};
+
+function getToken() { return localStorage.getItem('you_token'); }
+function saveToken(t) { localStorage.setItem('you_token', t); }
+function clearToken() { localStorage.removeItem('you_token'); }
+
+function setMsg(msg, type='error') {
+  const el = document.getElementById('auth-msg');
+  el.textContent = msg;
+  el.className = 'auth-msg ' + type;
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((t, i) => t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup')));
+  setMsg('');
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) return setMsg('please fill in all fields');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'signing in...';
+  try {
+    const r = await fetch(`${SERVER}/you/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await r.json();
+    if (!r.ok) { setMsg(data.error || 'something went wrong'); btn.disabled = false; btn.textContent = 'sign in'; return; }
+    saveToken(data.token);
+    CU = { email: data.email, userId: data.userId };
+    enterApp();
+  } catch { setMsg('could not connect. check your connection.'); }
+  btn.disabled = false; btn.textContent = 'sign in';
+}
+
+async function signup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  if (!email || !pass) return setMsg('please fill in all fields');
+  if (pass.length < 6) return setMsg('password must be at least 6 characters');
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true; btn.textContent = 'creating account...';
+  try {
+    const r = await fetch(`${SERVER}/you/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await r.json();
+    if (!r.ok) { setMsg(data.error || 'something went wrong'); btn.disabled = false; btn.textContent = 'create account'; return; }
+    saveToken(data.token);
+    CU = { email: data.email, userId: data.userId };
+    setMsg('welcome to you.', 'success');
+    setTimeout(enterApp, 600);
+  } catch { setMsg('could not connect. check your connection.'); }
+  btn.disabled = false; btn.textContent = 'create account';
+}
+
+async function enterApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.flexDirection = 'column';
+  document.getElementById('settings-email').textContent = CU.email;
+  await loadAnswers();
+  renderAllQuestions();
+}
+
+function logout() {
+  clearToken(); CU = null; savedAnswers = {};
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  closeSettings();
+}
+
+async function loadAnswers() {
+  try {
+    const r = await fetch(`${SERVER}/you/answers`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (r.ok) {
+      const entries = await r.json();
+      entries.forEach(e => { savedAnswers[e.question_id] = { text: e.answer, ts: new Date(e.updated_at).getTime() }; });
+    }
+  } catch {}
+}
+
+function renderAllQuestions() {
+  renderGroup('past-questions', PAST_QS, 'past');
+  renderGroup('present-questions', PRESENT_QS, 'present');
+  renderGroup('future-questions', FUTURE_QS, 'future');
+}
+
+function renderGroup(containerId, questions, type) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = questions.map(q => {
+    const saved = savedAnswers[q.id];
+    return `<div class="q-card">
+      <div class="q-label ${type}">${type}</div>
+      <div class="q-prompt">${q.prompt}</div>
+      <textarea class="q-input" id="q-${q.id}" placeholder="${q.placeholder}" rows="3" oninput="autoResize(this)">${saved ? escHtml(saved.text) : ''}</textarea>
+      <div class="q-meta" id="meta-${q.id}">${saved ? 'last saved ' + timeAgo(saved.ts) : ''}</div>
+    </div>`;
+  }).join('');
+  questions.forEach(q => {
+    const el = document.getElementById('q-' + q.id);
+    if (el && el.value) autoResize(el);
+  });
+}
+
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
+async function saveAll() {
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'saving...'; btn.disabled = true;
+  const all = [...PAST_QS, ...PRESENT_QS, ...FUTURE_QS];
+  const now = Date.now();
+  let saved = 0;
+  for (const q of all) {
+    const el = document.getElementById('q-' + q.id);
+    if (el && el.value.trim()) {
+      try {
+        const r = await fetch(`${SERVER}/you/answers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
+          body: JSON.stringify({ questionId: q.id, answer: el.value.trim() })
+        });
+        if (r.ok) {
+          savedAnswers[q.id] = { text: el.value.trim(), ts: now };
+          const metaEl = document.getElementById('meta-' + q.id);
+          if (metaEl) { metaEl.textContent = 'saved just now'; metaEl.className = 'q-meta q-saving'; setTimeout(() => { if (metaEl) metaEl.className = 'q-meta'; }, 2000); }
+          saved++;
+        }
+      } catch {}
+    }
+  }
+  btn.textContent = saved > 0 ? 'saved ✓' : 'save';
+  btn.className = saved > 0 ? 'save-btn done' : 'save-btn';
+  btn.disabled = false;
+  setTimeout(() => { btn.textContent = 'save'; btn.className = 'save-btn'; }, 2000);
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'all') renderTimeline();
+}
+
+function renderTimeline() {
+  const container = document.getElementById('timeline');
+  const groups = [
+    { type: 'past', qs: PAST_QS },
+    { type: 'present', qs: PRESENT_QS },
+    { type: 'future', qs: FUTURE_QS },
+  ];
+  let entries = [];
+  groups.forEach(g => {
+    g.qs.forEach(q => {
+      const saved = savedAnswers[q.id];
+      if (saved) entries.push({ type: g.type, question: q.prompt, answer: saved.text, ts: saved.ts });
+    });
+  });
+  entries.sort((a, b) => b.ts - a.ts);
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-title">nothing here yet.</div><div class="empty-text">start writing in past, present, or future.<br>your answers will appear here.</div></div>`;
+    return;
+  }
+  container.innerHTML = entries.map(e => `
+    <div class="timeline-entry">
+      <div class="timeline-meta">
+        <span class="timeline-tag tag-${e.type}">${e.type}</span>
+        <span class="timeline-date">${new Date(e.ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+      </div>
+      <div class="timeline-q">${e.question}</div>
+      <div class="timeline-a">${escHtml(e.answer)}</div>
+    </div>
+  `).join('');
+}
+
+function openSettings() { document.getElementById('settings-overlay').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); }
+
+async function sendWeekly() {
+  const btn = document.getElementById('weekly-btn');
+  btn.disabled = true; btn.textContent = 'sending...';
+  try {
+    await fetch(`${SERVER}/you/weekly`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() } });
+    btn.textContent = 'sent ✓'; btn.className = 'settings-btn-sm sent';
+  } catch { btn.textContent = 'send now'; btn.disabled = false; }
+}
+
+async function sendSeasonal() {
+  const btn = document.getElementById('seasonal-btn');
+  btn.disabled = true; btn.textContent = 'sending...';
+  try {
+    const r = await fetch(`${SERVER}/you/seasonal`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() } });
+    const data = await r.json();
+    btn.textContent = data.message ? 'not enough history yet' : 'sent ✓';
+    btn.className = 'settings-btn-sm sent';
+  } catch { btn.textContent = 'send now'; btn.disabled = false; }
+}
+
+async function sendAnniversary() {
+  const btn = document.getElementById('anniversary-btn');
+  btn.disabled = true; btn.textContent = 'sending...';
+  try {
+    await fetch(`${SERVER}/you/anniversary`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() } });
+    btn.textContent = 'sent ✓'; btn.className = 'settings-btn-sm sent';
+  } catch { btn.textContent = 'send now'; btn.disabled = false; }
+}
+
+function timeAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000) return 'just now';
+  if (d < 3600000) return Math.floor(d / 60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d / 3600000) + 'h ago';
+  return Math.floor(d / 86400000) + 'd ago';
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function boot() {
+  const token = getToken();
+  if (token) {
+    try {
+      const r = await fetch(`${SERVER}/you/answers`, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (r.ok) {
+        const decoded = JSON.parse(atob(token));
+        CU = { email: decoded.email, userId: decoded.id };
+        const entries = await r.json();
+        entries.forEach(e => { savedAnswers[e.question_id] = { text: e.answer, ts: new Date(e.updated_at).getTime() }; });
+        enterApp(); return;
+      }
+    } catch {}
+    clearToken();
+  }
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+boot();
+</script>
+</body>
+</html>
